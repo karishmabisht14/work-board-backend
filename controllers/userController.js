@@ -1,4 +1,4 @@
-const User = require("../models/user");
+const { User } = require("../models/index");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -13,8 +13,9 @@ const login = async (req, res) => {
     }
     // Validate if user exist in our database
     const user = await User.findOne({ email });
+    await bcrypt.compare(password, user.password);
 
-    if (user && (await bcrypt.compare(password, user.password))) {
+    if (user) {
       // Create token
       const token = jwt.sign(
         { user_id: user._id, email },
