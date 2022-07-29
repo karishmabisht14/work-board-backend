@@ -1,4 +1,4 @@
-const { User } = require("../models/index");
+const { User, AuthToken } = require("../models/index");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -14,16 +14,20 @@ const login = async (req, res) => {
     // Validate if user exist in our database
     const user = await User.findOne({ email });
     await bcrypt.compare(password, user.password);
-
     if (user) {
       // Create token
       const token = jwt.sign(
         { user_id: user._id, email },
         process.env.TOKEN_KEY,
         {
-          expiresIn: "2h",
+          expiresIn: process.env.TOKEN_EXPIRY || "2d",
         }
       );
+
+      await AuthToken.create({
+        userId: user.id,
+        token,
+      });
 
       // save user token
       user.token = token;
@@ -51,7 +55,6 @@ const register = async (req, res) => {
     // check if user already exist
     // Validate if user exist in our database
     const oldUser = await User.findOne({ email });
-
     if (oldUser) {
       return res.status(409).send("User Already Exist. Please Login");
     }
@@ -63,7 +66,7 @@ const register = async (req, res) => {
     const user = await User.create({
       firstName,
       lastName,
-      email: email.toLowerCase(), // sanitize: convert email to lowercase
+      email: email.toLowerCase().trim(), // sanitize: convert email to lowercase
       password: encryptedPassword,
     });
 
@@ -71,10 +74,13 @@ const register = async (req, res) => {
     const token = jwt.sign(
       { user_id: user._id, email },
       process.env.TOKEN_KEY,
-      {
-        expiresIn: "2d",
-      }
+      { expiresIn: process.env.TOKEN_EXPIRY || "2d" }
     );
+
+    await AuthToken.create({
+      userId: user.id,
+      token,
+    });
     // save user token
     user.token = token;
     // return new user
@@ -84,7 +90,19 @@ const register = async (req, res) => {
   }
 };
 
+const logout = async (req, res) => {
+  try {
+    // Delete user Token from DB
+    await AuthToken.deleteOne({ token: req.user.token });
+    return res.status(200).send("Logged Out Successfully!");
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Internal Server Error!");
+  }
+};
+
 module.exports = {
   login,
   register,
+  logout,
 };
