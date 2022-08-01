@@ -13,8 +13,11 @@ const login = async (req, res) => {
     }
     // Validate if user exist in our database
     const user = await User.findOne({ email });
-    await bcrypt.compare(password, user.password);
     if (user) {
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).send("Email Id or the Password is not correct!");
+      }
       // Create token
       const token = jwt.sign(
         { user_id: user._id, email },
@@ -31,11 +34,10 @@ const login = async (req, res) => {
 
       // save user token
       user.token = token;
-
       // user
       return res.status(200).json(user);
     }
-    return res.status(400).send("Invalid Credentials");
+    return res.status(401).send("Email Id or the Password is not correct!");
   } catch (err) {
     console.log(err);
     res.status(500).send("Internal Server Error!");
