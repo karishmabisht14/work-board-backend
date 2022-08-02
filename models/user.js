@@ -6,7 +6,6 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   userType: { type: String, enum: ["user", "admin"], default: "user" },
   password: { type: String },
-  token: { type: String },
   isActive: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
 });
