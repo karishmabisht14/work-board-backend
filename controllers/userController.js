@@ -1,6 +1,7 @@
 const { User, AuthToken } = require("../models/index");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { getErrorContent } = require("../helpers/commonHelper");
 
 const login = async (req, res) => {
   try {
@@ -9,14 +10,14 @@ const login = async (req, res) => {
 
     // Validate user input
     if (!(email && password)) {
-      return res.status(400).send({ success: false, message: "All input is required" });
+      throw getErrorContent(400, "INCOMPLETE_ARGUMENTS", 'Email-Id and Password');
     }
     // Validate if user exist in our database
     const user = await User.findOne({ email }, { userType: 0, __v: 0 });
     if (user) {
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
-        return res.status(401).send({ success: false, message: "Email Id or the Password is not correct!" });
+        throw getErrorContent(401, "INVALID_CREDENTIALS");
       }
       // Create token
       const token = jwt.sign(
@@ -42,10 +43,9 @@ const login = async (req, res) => {
       };
       return res.status(200).json(result);
     }
-    return res.status(401).send({ success: false, message: "Email Id or the Password is not correct!" });
+    throw getErrorContent(401, "INVALID_CREDENTIALS");
   } catch (err) {
-    console.log(err);
-    res.status(500).send({ success: false, message: "Internal Server Error!" });
+    throw err;
   }
 };
 
@@ -56,14 +56,14 @@ const register = async (req, res) => {
 
     // Validate user input
     if (!(email && password && firstName)) {
-      return res.status(400).send({ success: false, message: "All input is required" });
+      throw getErrorContent(400, "INCOMPLETE_ARGUMENTS", 'Email-Id, Password and First Name');
     }
 
     // check if user already exist
     // Validate if user exist in our database
     const oldUser = await User.findOne({ email });
     if (oldUser) {
-      return res.status(409).send({ success: false, message: "User Already Exist. Please Login" });
+      throw getErrorContent(409, "ALREADY_EXISTS", email);
     }
 
     //Encrypt user password
@@ -100,7 +100,7 @@ const register = async (req, res) => {
 
     return res.status(201).json(result);
   } catch (err) {
-    console.log(err);
+    throw err;
   }
 };
 
@@ -124,8 +124,7 @@ const logout = async (req, res) => {
     await AuthToken.deleteOne({ token: req.user.token });
     return res.status(200).send({ success: true, message: "Logged Out Successfully!" });
   } catch (err) {
-    console.log(err);
-    res.status(500).send({ success: false, message: "Internal Server Error!" });
+    throw getErrorContent(500, "SERVER_ERROR");
   }
 };
 

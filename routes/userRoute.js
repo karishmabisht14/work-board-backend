@@ -4,9 +4,30 @@ const { login, register, logout, userDetails } = require("../controllers/userCon
 const auth = require("../middlewares/auth");
 
 userRouter.post("/register", register);
-userRouter.post("/login", login);
-userRouter.get("/me", auth, userDetails);
-userRouter.post("/logout", auth, logout);
+userRouter.post("/login", async (req, res, next) => {
+  try {
+    await login(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
+userRouter.get("/me", async (req, res, next) => {
+  try {
+    await auth(req, res);
+    await userDetails(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
+
+userRouter.post("/logout", async (req, res, next) => {
+  try {
+    await auth(req, res);
+    await logout(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
 
 /**
  * Test Route

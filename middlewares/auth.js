@@ -1,18 +1,17 @@
 const jwt = require("jsonwebtoken");
 const { isValidToken } = require("../controllers/authTokenController");
+const { getErrorContent } = require("../helpers/commonHelper");
 
 const config = process.env;
 
-const verifyToken = async (req, res, next) => {
+const verifyToken = async (req, res) => {
   const token =
     req.body.token ||
     req.query.token ||
     req.headers["x-access-token"] ||
     req.headers.authorization;
   if (!token) {
-    return res
-      .status(403)
-      .send("A valid token is required for authentication!");
+    throw getErrorContent(403, "AUTHORIZATION_REQUIRED");
   }
   try {
     if (await isValidToken(token)) {
@@ -20,12 +19,12 @@ const verifyToken = async (req, res, next) => {
       req.user = decoded;
       req.user.token = token;
     } else {
-      return res.status(401).send("Invalid / Expired Token!");
+      throw getErrorContent(401, "INVALID_TOKEN");
     }
   } catch (err) {
-    return res.status(401).send("Invalid Token");
+    throw getErrorContent(401, "INVALID_TOKEN");
   }
-  return next();
+  return;
 };
 
 module.exports = verifyToken;
