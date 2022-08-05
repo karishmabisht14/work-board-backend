@@ -1,13 +1,29 @@
 const express = require("express");
+const { BoardCategory } = require("../models");
+const { categories } = require("../utils/metaData");
 const router = express.Router();
 const userRouter = require("./userRoute");
+const boardCategoryRoute = require("./categoryRoute");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
   return res.status(200).send("Welcome 🙌 ! API Server is running actively! ");
 });
 
+router.post("/loadCategories", async function (req, res, next) {
+  const dataToAdd = categories;
+  const dbData = await BoardCategory.find();
+  if (dbData.length < dataToAdd.length) {
+    const addedData = await BoardCategory.insertMany(dataToAdd);
+    if (addedData && addedData.length) {
+      return res.status(200).json(addedData);
+    }
+  }
+  return res.status(200).json([]);
+});
+
 router.use("/user", userRouter);
+router.use("/categories", boardCategoryRoute);
 
 // This should be the last route else any after it won't work
 router.use("*", (req, res) => {

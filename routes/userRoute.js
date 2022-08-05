@@ -3,7 +3,14 @@ const userRouter = express.Router();
 const { login, register, logout, userDetails } = require("../controllers/userController");
 const auth = require("../middlewares/auth");
 
-userRouter.post("/register", register);
+userRouter.post("/register", async (req, res, next) => {
+  try {
+    await register(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
+
 userRouter.post("/login", async (req, res, next) => {
   try {
     await login(req, res);
