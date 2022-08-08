@@ -18,6 +18,7 @@ userRouter.post("/login", async (req, res, next) => {
     next(error);
   }
 });
+
 userRouter.get("/me", async (req, res, next) => {
   try {
     await auth(req, res);

@@ -4,6 +4,7 @@ const { categories } = require("../utils/metaData");
 const router = express.Router();
 const userRouter = require("./userRoute");
 const boardCategoryRoute = require("./categoryRoute");
+const taskRouter = require("./taskRoute");
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
@@ -22,8 +23,9 @@ router.post("/loadCategories", async function (req, res, next) {
   return res.status(200).json([]);
 });
 
-router.use("/user", userRouter);
+router.use("/users", userRouter);
 router.use("/categories", boardCategoryRoute);
+router.use("/tasks", taskRouter);
 
 // This should be the last route else any after it won't work
 router.use("*", (req, res) => {
