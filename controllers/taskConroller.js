@@ -3,7 +3,7 @@ const { Task, BoardCategory } = require("../models/index");
 
 const addtask = async (req, res) => {
     try {
-        const { name, description, currentStage, categoryCode } = req.body;
+        const { name, description, taskStage, categoryCode } = req.body;
         // Validate user input
         if (!(name && categoryCode)) {
             throw getErrorContent(400, "INCOMPLETE_ARGUMENTS", 'Task Name and Category');
@@ -22,7 +22,7 @@ const addtask = async (req, res) => {
         const taskData = {
             name: name,
             description: description,
-            currentStage: currentStage || 1,
+            currentStage: taskStage || 1,
             categoryId: Category.id,
             userId: req.user.userId
         }
@@ -35,6 +35,24 @@ const addtask = async (req, res) => {
     }
 };
 
+const getUserTasks = async (req, res) => {
+    try {
+        const { categoryCode } = req.query;
+        if (!categoryCode) {
+            throw getErrorContent(400, "INCOMPLETE_ARGUMENTS", 'Category');
+        }
+        const Category = await BoardCategory.findOne({ categoryCode: categoryCode });
+        if (!Category) {
+            throw getErrorContent(404, "NOT_FOUND", 'Requested Category');
+        }
+        const allTasks = await Task.find({ userId: req.user.userId, categoryId: Category.id });
+        return res.status(200).json(allTasks);
+    } catch (err) {
+        throw err;
+    }
+};
+
 module.exports = {
-    addtask
+    addtask,
+    getUserTasks
 };
