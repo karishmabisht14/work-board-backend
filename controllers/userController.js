@@ -113,7 +113,6 @@ const userDetails = async (req, res) => {
     }
     return res.status(200).json({ success: true, message: '', data: null });
   } catch (err) {
-    console.log(err);
     res.status(500).send({ success: false, message: "Internal Server Error!" });
   }
 };

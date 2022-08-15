@@ -33,12 +33,18 @@ const ErrorMessages = {
     "ALREADY_EXISTS": "~s~ already exists!",
     "SERVER_ERROR": "Internal Server Error",
     "INVALID_TOKEN": "Invalid / Expired Token!",
-    "AUTHORIZATION_REQUIRED": "A valid token is required for authentication!"
+    "AUTHORIZATION_REQUIRED": "A valid token is required for authentication!",
+    "UNPROCCESSABLE_ENTITY": "Request cannot be processed, Please check the Request and try again."
+};
+
+const SuccessMessages = {
+    "SUCCESS": "Request completed successfully!"
 };
 
 module.exports = {
     ErrorCodes,
     SuccessCodes,
     ServerErrorCodes,
-    ErrorMessages
+    ErrorMessages,
+    SuccessMessages
 };
